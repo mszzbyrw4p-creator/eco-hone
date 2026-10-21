@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ЭКО ферма — витрина</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Manrope:wght@400;500;600;700&display=swap">
+<!-- В настоящей мини-апке этот скрипт связывает страницу с Telegram (тема, кнопки, данные пользователя).
+     В браузере без Telegram он просто ничего не делает. -->
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+/* Макет: одна колонка как в телефоне, сверху шапка, снизу панель вкладок.
+   Палитра: лесной зелёный (пасека, «эко») + янтарь мёда на восково-светлом фоне. */
+:root{
+  --bg:#F3F5EE;          /* светлый, с лёгким зелёным оттенком */
+  --surface:#FFFFFF;
+  --fg:#1E2A1F;
+  --muted:#5E6B5C;
+  --line:#DCE2D3;
+  --forest:#2F5233;      /* основной цвет бренда */
+  --forest-ink:#FFFFFF;
+  --honey:#D9901A;       /* акцент: цены, кнопка заказа */
+  --honey-soft:#FBEBCB;
+  --font-display:"Unbounded", "Arial Black", system-ui, sans-serif;
+  --font-body:"Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121812; --surface:#1B231B; --fg:#E9EEE4; --muted:#9AA696; --line:#2C372B;
+    --forest:#7FB283; --forest-ink:#0F1A10; --honey:#F0AE3E; --honey-soft:#3A2C12;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121812; --surface:#1B231B; --fg:#E9EEE4; --muted:#9AA696; --line:#2C372B;
+  --forest:#7FB283; --forest-ink:#0F1A10; --honey:#F0AE3E; --honey-soft:#3A2C12;
+  color-scheme: dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 var(--font-body);-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--honey);outline-offset:2px}
+[hidden]{display:none!important}
+
+.app{max-width:480px;margin:0 auto;min-height:100%;padding:0 16px calc(84px + env(safe-area-inset-bottom,0px));}
+.demo-note{font-size:12px;color:var(--muted);text-align:center;padding:8px 0 0}
+
+/* ---------- Главная ---------- */
+.hero{background:var(--forest);color:var(--forest-ink);border-radius:20px;padding:22px 20px;margin-top:12px;position:relative;overflow:hidden}
+.hero h1{font-family:var(--font-display);font-weight:700;font-size:26px;line-height:1.15;margin:0 0 8px;text-wrap:balance}
+.hero p{margin:0;opacity:.9;max-width:30ch}
+.hero .comb{position:absolute;right:-18px;top:-10px;width:130px;opacity:.16}
+.hero-actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+.btn{border:0;border-radius:12px;padding:12px 16px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.btn-honey{background:var(--honey);color:#1E1606}
+.btn-ghost{background:transparent;border:1.5px solid currentColor;color:inherit}
+.btn-block{width:100%}
+
+.section-title{font-family:var(--font-display);font-weight:500;font-size:16px;margin:24px 0 10px}
+.facts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.fact{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px}
+.fact b{display:block;font-size:14px}
+.fact span{font-size:13px;color:var(--muted)}
+
+.gift{display:flex;gap:12px;align-items:center;background:var(--honey-soft);border-radius:14px;padding:14px;margin-top:12px}
+.gift svg{flex:none}
+.gift p{margin:0;font-size:14px}
+
+.menu{display:grid;gap:8px}
+.menu a{color:inherit;text-decoration:none}
+.menu button,.menu a{display:flex;justify-content:space-between;align-items:center;width:100%;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;text-align:left;font-weight:600}
+.menu small{display:block;font-weight:400;color:var(--muted);font-size:13px}
+
+/* ---------- Каталог ---------- */
+.chips{display:flex;gap:8px;overflow-x:auto;padding:12px 0 4px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 14px;font-weight:600;font-size:14px}
+.chip[aria-pressed="true"]{background:var(--forest);border-color:var(--forest);color:var(--forest-ink)}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:6px;text-align:left}
+.card .pic{aspect-ratio:1/1;border-radius:12px;display:grid;place-items:center;max-width:100%}
+.card h3{font-size:14px;margin:0;line-height:1.3}
+.card .from{color:var(--muted);font-size:13px}
+.card .price{font-weight:700;color:var(--fg);font-variant-numeric:tabular-nums}
+.badge{align-self:flex-start;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;background:var(--honey-soft);color:var(--fg);border-radius:6px;padding:2px 6px}
+
+/* ---------- Карточка товара (лист снизу) ---------- */
+.sheet-wrap{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;z-index:20}
+.sheet{background:var(--bg);width:100%;max-width:480px;border-radius:22px 22px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px));max-height:90%;overflow-y:auto}
+.sheet .pic{height:170px;border-radius:16px;display:grid;place-items:center}
+.sheet h2{font-family:var(--font-display);font-weight:500;font-size:20px;margin:14px 0 6px}
+.sheet p{margin:0 0 12px;color:var(--muted)}
+.sizes{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 14px}
+.size{border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 12px;font-weight:600;font-variant-numeric:tabular-nums}
+.size[aria-pressed="true"]{border-color:var(--honey);background:var(--honey-soft)}
+.size small{display:block;font-weight:500;color:var(--muted)}
+.qty{display:flex;align-items:center;gap:12px}
+.qty button{width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:var(--surface);font-weight:700;font-size:18px}
+.row{display:flex;gap:10px;align-items:center;justify-content:space-between}
+.sheet .close{background:none;border:0;color:var(--muted);float:right;font-size:14px}
+
+/* ---------- Корзина и оформление ---------- */
+.line{display:flex;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin-bottom:8px}
+.line .pic{width:48px;height:48px;border-radius:10px;display:grid;place-items:center;flex:none}
+.line .info{flex:1;min-width:0}
+.line .info b{display:block;font-size:14px}
+.line .info span{font-size:13px;color:var(--muted)}
+.total{display:flex;justify-content:space-between;font-weight:700;font-size:17px;margin:14px 0;font-variant-numeric:tabular-nums}
+.field{display:grid;gap:4px;margin-bottom:12px}
+.field label{font-size:13px;font-weight:600;color:var(--muted)}
+.field input,.field select,.field textarea{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;width:100%}
+.err{color:#C0392B;font-size:13px}
+.empty{text-align:center;color:var(--muted);padding:40px 0}
+
+/* «Так заказ увидит Алексей в боте» */
+.bot{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px;margin-top:14px}
+.bot .head{display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px;margin-bottom:8px}
+.bot .bubble{background:var(--bg);border-radius:12px;padding:12px;white-space:pre-wrap;font-size:14px;font-variant-numeric:tabular-nums}
+
+/* ---------- О пасеке ---------- */
+.about p{margin:0 0 12px}
+.std{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.std li{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.link{color:var(--forest);font-weight:700;text-decoration:none}
+
+/* ---------- Нижняя панель ---------- */
+.tabbar{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));z-index:10}
+.tabbar nav{max-width:480px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr)}
+.tab{background:none;border:0;display:grid;justify-items:center;gap:2px;font-size:11px;font-weight:600;color:var(--muted);padding:6px 0;position:relative}
+.tab[aria-current="page"]{color:var(--forest)}
+.tab .count{position:absolute;top:0;right:calc(50% - 22px);background:var(--honey);color:#1E1606;border-radius:999px;font-size:10px;min-width:16px;height:16px;line-height:16px;padding:0 4px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:12px;font-weight:600;font-size:14px;z-index:30}
+@media (prefers-reduced-motion:no-preference){.sheet{animation:up .22s ease-out}@keyframes up{from{transform:translateY(30px);opacity:.6}}}
+</style>
+</head>
+<body>
+<div class="app">
+  <p class="demo-note">Демо-версия · цены примерные</p>
+
+  <!-- ===== ГЛАВНАЯ ===== -->
+  <section id="v-home">
+    <div class="hero">
+      <svg class="comb" viewBox="0 0 100 100" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="4"><path d="M30 10l17 10v20L30 50 13 40V20z"/><path d="M64 10l17 10v20L64 50 47 40V20z"/><path d="M47 40l17 10v20L47 80 30 70V50z"/><path d="M81 40l17 10v20L81 80 64 70V50z"/></g></svg>
+      <h1>ЭКО ферма</h1>
+      <p>Мёд и продукты пчеловодства по эко-стандарту. Пасека Алексея.</p>
+      <div class="hero-actions">
+        <button class="btn btn-honey" data-go="catalog">Открыть каталог</button>
+        <button class="btn btn-ghost" data-go="about">О пасеке</button>
+      </div>
+    </div>
+
+    <div class="gift">
+      <svg width="34" height="34" viewBox="0 0 24 24" aria-hidden="true"><path fill="var(--honey)" d="M20 7h-2.2A3 3 0 0 0 12 4.4 3 3 0 0 0 6.2 7H4a1 1 0 0 0-1 1v3h18V8a1 1 0 0 0-1-1Zm-5-1a1 1 0 1 1 0 2h-2a2 2 0 0 1 2-2Zm-6 0a2 2 0 0 1 2 2H9a1 1 0 1 1 0-2ZM4 13v6a1 1 0 0 0 1 1h6v-7H4Zm9 7h6a1 1 0 0 0 1-1v-6h-7v7Z"/></svg>
+      <p><b>Подарок к каждому заказу.</b> Положим забрус или мумие в посылку.</p>
+    </div>
+
+    <h2 class="section-title">Почему нам доверяют</h2>
+    <div class="facts">
+      <div class="fact"><b>Без сахара</b><span>Пчёл не подкармливаем сиропом</span></div>
+      <div class="fact"><b>Без химии</b><span>Нет антибиотиков на пасеке</span></div>
+      <div class="fact"><b>Без пластика</b><span>Стекло и натуральная тара</span></div>
+      <div class="fact"><b>Инструкция</b><span>PDF к каждому продукту</span></div>
+    </div>
+
+    <h2 class="section-title">Навигация</h2>
+    <div class="menu">
+      <button data-go="catalog">Каталог<small>Мёд, перга, пыльца, прополис</small><span aria-hidden="true">›</span></button>
+      <button data-go="delivery">Доставка и оплата<small>СДЭК по всей России</small><span aria-hidden="true">›</span></button>
+      <button data-go="about">Наш эко-стандарт<small>Как мы работаем на пасеке</small><span aria-hidden="true">›</span></button>
+      <a href="https://avito.ru/brands/b554c4e65235cee407ccef40d873f9ff" target="_blank" rel="noopener"><span>Отзывы покупателей<small>На Авито</small></span><span aria-hidden="true">↗</span></a>
+    </div>
+  </section>
+
+  <!-- ===== КАТАЛОГ ===== -->
+  <section id="v-catalog" hidden>
+    <h2 class="section-title">Каталог</h2>
+    <div class="chips" id="chips" role="group" aria-label="Категории"></div>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <!-- ===== КОРЗИНА ===== -->
+  <section id="v-cart" hidden>
+    <h2 class="section-title">Корзина</h2>
+    <div id="cart-list"></div>
+    <div id="cart-form" hidden>
+      <div class="total"><span>Итого</span><span id="cart-total"></span></div>
+      <form id="order" novalidate>
+        <div class="field"><label for="f-name">Имя</label><input id="f-name" autocomplete="name" placeholder="Как к вам обращаться"></div>
+        <div class="field"><label for="f-phone">Телефон</label><input id="f-phone" type="tel" autocomplete="tel" placeholder="+7 900 000-00-00"></div>
+        <div class="field"><label for="f-city">Город</label><input id="f-city" placeholder="Например, Екатеринбург"></div>
+        <div class="field"><label for="f-ship">Доставка</label>
+          <select id="f-ship"><option>СДЭК, до пункта выдачи</option><option>СДЭК, курьером</option><option>Самовывоз</option></select></div>
+        <div class="field"><label for="f-note">Комментарий</label><textarea id="f-note" rows="2" placeholder="Пожелания к заказу"></textarea></div>
+        <p class="err" id="f-err" hidden></p>
+        <button class="btn btn-honey btn-block" type="submit">Оформить заказ</button>
+      </form>
+    </div>
+    <div id="sent" hidden>
+      <div class="gift"><p><b>Заказ принят.</b> Алексей напишет вам в Telegram, чтобы подтвердить состав и доставку.</p></div>
+      <div class="bot">
+        <div class="head">
+          <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="var(--forest)"/><path d="M6 12l11-4-2 9-3-2-2 2v-3l5-4-6 3z" fill="var(--forest-ink)"/></svg>
+          Так этот заказ придёт Алексею в бота
+        </div>
+        <div class="bubble" id="bot-msg"></div>
+      </div>
+      <button class="btn btn-ghost btn-block" style="margin-top:12px" data-go="home">На главную</button>
+    </div>
+  </section>
+
+  <!-- ===== О ПАСЕКЕ ===== -->
+  <section id="v-about" class="about" hidden>
+    <h2 class="section-title">О пасеке</h2>
+    <p>Меня зовут Алексей, я пчеловод. Продукцию делаем прежде всего для своей семьи и близких, а излишки продаём тем, кому важен состав.</p>
+    <p>Работаем так, как пчеловоды работали раньше, без ускорителей и подкормок.</p>
+    <h2 class="section-title">Наш эко-стандарт</h2>
+    <ul class="std">
+      <li>Не подкармливаем пчёл сахарным сиропом</li>
+      <li>Не используем антибиотики и химию на пасеке</li>
+      <li>Не храним продукцию в пластике</li>
+      <li>Падевый мёд собираем только в редкие годы и продаём ограниченно</li>
+    </ul>
+    <p style="margin-top:16px"><a class="link" href="https://avito.ru/brands/b554c4e65235cee407ccef40d873f9ff" target="_blank" rel="noopener">Читать отзывы на Авито ↗</a></p>
+  </section>
+
+  <!-- ===== ДОСТАВКА ===== -->
+  <section id="v-delivery" class="about" hidden>
+    <h2 class="section-title">Доставка и оплата</h2>
+    <ul class="std">
+      <li><b>СДЭК по всей России.</b> Отправляем несколько раз в неделю, о дне отправки пишем в канале.</li>
+      <li><b>Упаковка.</b> Стеклянные банки пакуем плотно. Если посылка повреждена, разберёмся и отправим заново.</li>
+      <li><b>Оплата.</b> После подтверждения заказа Алексей пришлёт реквизиты.</li>
+      <li><b>Вопросы.</b> Пишите напрямую: <a class="link" href="https://t.me/ecohoneys" target="_blank" rel="noopener">@ecohoneys</a></li>
+    </ul>
+  </section>
+</div>
+
+<!-- Лист с карточкой товара -->
+<div class="sheet-wrap" id="sheet" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="s-title">
+    <button class="close" id="s-close">Закрыть</button>
+    <div class="pic" id="s-pic"></div>
+    <h2 id="s-title"></h2>
+    <p id="s-desc"></p>
+    <div class="sizes" id="s-sizes"></div>
+    <div class="row">
+      <div class="qty"><button id="q-minus" aria-label="Меньше">−</button><b id="q-val">1</b><button id="q-plus" aria-label="Больше">+</button></div>
+      <button class="btn btn-honey" id="s-add">В корзину</button>
+    </div>
+  </div>
+</div>
+
+<div class="tabbar"><nav>
+  <button class="tab" data-go="home" aria-current="page"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 3 3 10v10h6v-6h6v6h6V10z"/></svg>Главная</button>
+  <button class="tab" data-go="catalog"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 4h7v7H4zm9 0h7v7h-7zM4 13h7v7H4zm9 0h7v7h-7z"/></svg>Каталог</button>
+  <button class="tab" data-go="cart"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 18a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm10 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4ZM5.2 4l.6 3H21l-2 8H7.4L4.4 2H1v2h4.2Z"/></svg>Корзина<span class="count" id="cart-count" hidden></span></button>
+  <button class="tab" data-go="about"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-5 0-9 2.5-9 6v2h18v-2c0-3.5-4-6-9-6Z"/></svg>О нас</button>
+</nav></div>
+
+<div class="toast" id="toast" hidden></div>
+
+<script>
+/* =========================================================
+   ДАННЫЕ. В настоящей апке этот список придёт с сервера,
+   а владелец будет менять его через бота. Цены — демо.
+   ========================================================= */
+const CATEGORIES = [
+  {id:'all',   name:'Всё'},
+  {id:'honey', name:'Мёд'},
+  {id:'bee',   name:'Продукты пчеловодства'},
+  {id:'other', name:'Экстракты и другое'}
+];
+
+const PRODUCTS = [
+  {id:1, cat:'honey', name:'Мёд разнотравье', color:'#E3A72F',
+   desc:'Основной мёд пасеки, собран с луговых и полевых трав. Мягкий цветочный вкус.',
+   sizes:[{label:'0,5 л',price:900},{label:'1 л',price:1700},{label:'3 л',price:4800}]},
+  {id:2, cat:'honey', name:'Падевый мёд', color:'#5A3A1A', badge:'Редкий',
+   desc:'Тёмный мёд с густым, необычным вкусом. Пасека собирает его раз в несколько лет, партия ограничена.',
+   sizes:[{label:'0,5 л',price:1500},{label:'1 л',price:2800}]},
+  {id:3, cat:'bee', name:'Перга', color:'#8C5A2B',
+   desc:'Пчелиный хлеб: пыльца, которую пчёлы утрамбовали в соты и запечатали мёдом.',
+   sizes:[{label:'100 г',price:700},{label:'250 г',price:1600}]},
+  {id:4, cat:'bee', name:'Перга в меду', color:'#B5762F',
+   desc:'Перга, смешанная с мёдом разнотравья. Удобно есть ложкой.',
+   sizes:[{label:'250 мл',price:900},{label:'500 мл',price:1700}]},
+  {id:5, cat:'bee', name:'Пчелиная пыльца', color:'#E6B93A',
+   desc:'Обножка, собранная с дикорастущих трав. Сухие гранулы с цветочным вкусом.',
+   sizes:[{label:'100 г',price:450},{label:'250 г',price:1000}]},
+  {id:6, cat:'bee', name:'Забрус', color:'#D6B66A',
+   desc:'Восковые «крышечки» с сот вместе с мёдом. Жуётся как натуральная жвачка.',
+   sizes:[{label:'200 г',price:700}]},
+  {id:7, cat:'bee', name:'Маточное молочко', color:'#EFE3C2',
+   desc:'Продукт, которым пчёлы выкармливают матку. Хранится в холодильнике.',
+   sizes:[{label:'10 г',price:1200}]},
+  {id:8, cat:'other', name:'Водный экстракт прополиса', color:'#6B4A22',
+   desc:'Экстракт прополиса на воде, без спирта.',
+   sizes:[{label:'30 мл',price:600},{label:'100 мл',price:1500}]},
+  {id:9, cat:'other', name:'Экстракт 24 трав на меду', color:'#4E6B2E',
+   desc:'Сбор из 24 трав на основе нашего мёда. Без сахара и спирта, подходит и детям, и взрослым.',
+   sizes:[{label:'250 мл',price:1400}]},
+  {id:10, cat:'other', name:'Горное мумие', color:'#2E2620',
+   desc:'Натуральное горное мумие.',
+   sizes:[{label:'50 г',price:900}]},
+  {id:11, cat:'other', name:'Медовое мыло', color:'#E8C07A',
+   desc:'Мыло ручной работы с мёдом, с заметным медовым ароматом.',
+   sizes:[{label:'1 шт',price:350}]},
+  {id:12, cat:'other', name:'Масло гхи', color:'#F2C94C',
+   desc:'Топлёное масло из молока коров свободного выгула.',
+   sizes:[{label:'250 мл',price:900}]}
+];
+
+/* =========================================================
+   СОСТОЯНИЕ: что сейчас открыто и что лежит в корзине.
+   ========================================================= */
+const state = { view:'home', cat:'all', cart:[], sheet:null };
+
+const $ = s => document.querySelector(s);
+const rub = n => n.toLocaleString('ru-RU') + ' ₽';
+
+/* Связь с Telegram: если открыто внутри Telegram — разворачиваем окно. */
+const tg = window.Telegram && window.Telegram.WebApp;
+if (tg && tg.initData) { tg.ready(); tg.expand(); }
+
+/* Рисуем банку нужного цвета — заглушка вместо фото товара. */
+function jar(color, size){
+  return `<svg width="${size}" height="${size}" viewBox="0 0 64 64" aria-hidden="true">
+    <rect x="18" y="8" width="28" height="8" rx="2" fill="var(--forest)"/>
+    <path d="M16 18h32a4 4 0 0 1 4 4v30a6 6 0 0 1-6 6H18a6 6 0 0 1-6-6V22a4 4 0 0 1 4-4Z" fill="${color}"/>
+    <path d="M20 26h6v20h-6z" fill="#fff" opacity=".25"/></svg>`;
+}
+
+/* ---------- Переключение экранов ---------- */
+function go(view){
+  state.view = view;
+  ['home','catalog','cart','about','delivery'].forEach(v => $('#v-'+v).hidden = v !== view);
+  document.querySelectorAll('.tab').forEach(t =>
+    t.toggleAttribute('aria-current', t.dataset.go === view || (view==='delivery' && t.dataset.go==='home')));
+  if (view === 'cart') renderCart();
+  window.scrollTo(0,0);
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-go]');
+  if (b) go(b.dataset.go);
+});
+
+/* ---------- Каталог ---------- */
+function renderChips(){
+  $('#chips').innerHTML = CATEGORIES.map(c =>
+    `<button class="chip" data-cat="${c.id}" aria-pressed="${c.id===state.cat}">${c.name}</button>`).join('');
+}
+function renderGrid(){
+  const list = PRODUCTS.filter(p => state.cat==='all' || p.cat===state.cat);
+  $('#grid').innerHTML = list.map(p => `
+    <button class="card" data-id="${p.id}">
+      <div class="pic" style="background:color-mix(in srgb, ${p.color} 18%, var(--bg))">${jar(p.color,64)}</div>
+      ${p.badge ? `<span class="badge">${p.badge}</span>` : ''}
+      <h3>${p.name}</h3>
+      <span class="from">от <span class="price">${rub(Math.min(...p.sizes.map(s=>s.price)))}</span></span>
+    </button>`).join('');
+}
+$('#chips').addEventListener('click', e => {
+  const c = e.target.closest('[data-cat]'); if (!c) return;
+  state.cat = c.dataset.cat; renderChips(); renderGrid();
+});
+$('#grid').addEventListener('click', e => {
+  const c = e.target.closest('[data-id]'); if (c) openSheet(+c.dataset.id);
+});
+
+/* ---------- Карточка товара ---------- */
+function openSheet(id){
+  const p = PRODUCTS.find(x => x.id===id);
+  state.sheet = {p, size:0, qty:1};
+  $('#s-pic').style.background = `color-mix(in srgb, ${p.color} 18%, var(--bg))`;
+  $('#s-pic').innerHTML = jar(p.color,110);
+  $('#s-title').textContent = p.name;
+  $('#s-desc').textContent = p.desc;
+  renderSheet();
+  $('#sheet').hidden = false;
+}
+function renderSheet(){
+  const {p,size,qty} = state.sheet;
+  $('#s-sizes').innerHTML = p.sizes.map((s,i) =>
+    `<button class="size" data-i="${i}" aria-pressed="${i===size}">${s.label}<small>${rub(s.price)}</small></button>`).join('');
+  $('#q-val').textContent = qty;
+  $('#s-add').textContent = 'В корзину · ' + rub(p.sizes[size].price * qty);
+}
+$('#s-sizes').addEventListener('click', e => {
+  const b = e.target.closest('[data-i]'); if (!b) return;
+  state.sheet.size = +b.dataset.i; renderSheet();
+});
+$('#q-minus').onclick = () => { state.sheet.qty = Math.max(1, state.sheet.qty-1); renderSheet(); };
+$('#q-plus').onclick  = () => { state.sheet.qty = Math.min(20, state.sheet.qty+1); renderSheet(); };
+$('#s-close').onclick = () => $('#sheet').hidden = true;
+$('#sheet').addEventListener('click', e => { if (e.target.id==='sheet') $('#sheet').hidden = true; });
+
+/* В корзину кладём только номер товара, объём и количество.
+   Цену в настоящей апке пересчитает сервер — вспомни урок. */
+$('#s-add').onclick = () => {
+  const {p,size,qty} = state.sheet;
+  const same = state.cart.find(l => l.id===p.id && l.size===size);
+  if (same) same.qty = Math.min(20, same.qty + qty); else state.cart.push({id:p.id, size, qty});
+  $('#sheet').hidden = true;
+  updateCount();
+  toast('Добавлено в корзину');
+};
+
+/* ---------- Корзина ---------- */
+function cartTotal(){
+  return state.cart.reduce((sum,l) => {
+    const p = PRODUCTS.find(x=>x.id===l.id); return sum + p.sizes[l.size].price * l.qty;
+  }, 0);
+}
+function updateCount(){
+  const n = state.cart.reduce((s,l)=>s+l.qty,0);
+  $('#cart-count').hidden = n===0; $('#cart-count').textContent = n;
+}
+function renderCart(){
+  $('#sent').hidden = true;
+  if (!state.cart.length){
+    $('#cart-list').innerHTML = `<div class="empty">Корзина пуста.<br><br><button class="btn btn-honey" data-go="catalog">Перейти в каталог</button></div>`;
+    $('#cart-form').hidden = true; return;
+  }
+  $('#cart-list').innerHTML = state.cart.map((l,i) => {
+    const p = PRODUCTS.find(x=>x.id===l.id), s = p.sizes[l.size];
+    return `<div class="line">
+      <div class="pic" style="background:color-mix(in srgb, ${p.color} 18%, var(--bg))">${jar(p.color,36)}</div>
+      <div class="info"><b>${p.name}</b><span>${s.label} × ${l.qty} · ${rub(s.price*l.qty)}</span></div>
+      <button class="btn" style="padding:6px 10px;background:none;color:var(--muted)" data-del="${i}" aria-label="Убрать">✕</button>
+    </div>`;
+  }).join('');
+  $('#cart-total').textContent = rub(cartTotal());
+  $('#cart-form').hidden = false;
+}
+$('#cart-list').addEventListener('click', e => {
+  const d = e.target.closest('[data-del]'); if (!d) return;
+  state.cart.splice(+d.dataset.del,1); updateCount(); renderCart();
+});
+
+/* ---------- Оформление ----------
+   Демо: никуда не отправляем, только показываем, как сообщение
+   выглядело бы у владельца в боте. Данные нигде не сохраняются. */
+$('#order').addEventListener('submit', e => {
+  e.preventDefault();
+  const name = $('#f-name').value.trim(), phone = $('#f-phone').value.trim(), city = $('#f-city').value.trim();
+  const err = $('#f-err');
+  if (!name || phone.replace(/\D/g,'').length < 10 || !city){
+    err.textContent = 'Заполните имя, город и телефон (не меньше 10 цифр).'; err.hidden = false; return;
+  }
+  err.hidden = true;
+  const lines = state.cart.map(l => {
+    const p = PRODUCTS.find(x=>x.id===l.id), s = p.sizes[l.size];
+    return `• ${p.name}, ${s.label} × ${l.qty} — ${rub(s.price*l.qty)}`;
+  }).join('\n');
+  $('#bot-msg').textContent =
+`🍯 Новый заказ №${Math.floor(1000+Math.random()*9000)}
+
+${lines}
+
+Итого: ${rub(cartTotal())}
+Имя: ${name}
+Телефон: ${phone}
+Город: ${city}
+Доставка: ${$('#f-ship').value}${$('#f-note').value.trim() ? '\nКомментарий: '+$('#f-note').value.trim() : ''}
+
+[Подтвердить]  [Написать покупателю]`;
+  state.cart = []; updateCount();
+  $('#cart-list').innerHTML = ''; $('#cart-form').hidden = true; $('#sent').hidden = false;
+  $('#order').reset();
+});
+
+function toast(t){
+  const el = $('#toast'); el.textContent = t; el.hidden = false;
+  clearTimeout(toast.t); toast.t = setTimeout(()=> el.hidden = true, 1600);
+}
+
+/* Старт */
+renderChips(); renderGrid(); updateCount();
+</script>
+</body>
+</html>
