@@ -1,0 +1,654 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ЭКО ферма — витрина</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bitter:wght@600;700;800&family=Nunito:wght@400;600;700;800&family=Marck+Script&display=swap">
+<!-- Внутри Telegram этот скрипт даёт доступ к кнопкам, вибрации и данным пользователя.
+     В обычном браузере он ничего не делает, и апка работает как сайт. -->
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+/* Макет: крафтовая бумага (стиль А) + яркий мёд, соты и капли (стиль С).
+   Шрифты: Bitter (плотная засечка, как на этикетке), Nunito (мягкий текст), Marck Script (рукописные подписи, редко). */
+:root{
+  --paper:#F2E4C4;        /* крафтовая бумага */
+  --paper-2:#E8D5A8;
+  --card:#FFF8E6;
+  --ink:#3A2410;          /* тёмно-коричневый вместо чёрного */
+  --muted:#7C5E3B;
+  --line:#CDB58A;
+  --honey:#FFC21A;        /* яркий мёд */
+  --honey-deep:#E39A0B;
+  --on-honey:#3A2410;     /* текст на мёде всегда тёмный */
+  --leaf:#3F6B35;
+  --leaf-soft:#DCE7C6;
+  --danger:#B3361F;
+  --noise-opacity:.22;
+  --f-display:"Bitter", "Georgia", "Times New Roman", serif;
+  --f-body:"Nunito", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-hand:"Marck Script", "Segoe Script", cursive;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#1E140B; --paper-2:#2A1D11; --card:#2E2113; --ink:#F7E8C6; --muted:#C2A476; --line:#5C4729;
+    --leaf:#A3CF84; --leaf-soft:#2D3A22; --danger:#F08A73; --noise-opacity:.12; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#1E140B; --paper-2:#2A1D11; --card:#2E2113; --ink:#F7E8C6; --muted:#C2A476; --line:#5C4729;
+  --leaf:#A3CF84; --leaf-soft:#2D3A22; --danger:#F08A73; --noise-opacity:.12; color-scheme: dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.5 var(--f-body);-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+/* Зерно бумаги поверх фона */
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:var(--noise-opacity);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .22 0 0 0 0 .1 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;-webkit-appearance:none;appearance:none}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--honey-deep);outline-offset:2px}
+[hidden]{display:none!important}
+
+.app{position:relative;z-index:1;max-width:480px;margin:0 auto;padding:0 16px calc(150px + env(safe-area-inset-bottom,0px))}
+.demo-note{font-size:12px;color:var(--muted);text-align:center;padding:8px 0 0}
+h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance}
+.hand{font-family:var(--f-hand)}
+
+/* ---------- Кнопки ---------- */
+.btn{border:0;border-radius:16px;min-height:48px;padding:12px 20px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:transform .12s}
+.btn:active{transform:scale(.97)}
+.btn-honey{background:var(--honey);color:var(--on-honey);box-shadow:0 3px 0 var(--honey-deep)}
+.btn-dark{background:var(--ink);color:var(--paper)}
+.btn-line{background:transparent;border:2px solid var(--ink);color:var(--ink)}
+.btn-block{width:100%}
+
+/* ---------- Главная: обложка как этикетка ---------- */
+.hero{position:relative;margin-top:14px;margin-bottom:64px;background:var(--honey);color:var(--on-honey);border-radius:28px;padding:26px 20px 30px;
+  background-image:url("data:image/svg+xml,%3Csvg width='28' height='49' viewBox='0 0 28 49' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23e39a0b' fill-opacity='0.35' fill-rule='nonzero'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9zM0 15l12.98-7.5V0h-2v6.35L0 12.69v2.3zm0 18.5L12.98 41v8h-2v-6.85L0 35.81v-2.3zM15 0v7.5L27.99 15H28v-2.31h-.01L17 6.35V0h-2zm0 49v-8l12.99-7.5H28v2.31h-.01L17 42.15V49h-2z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  background-size:56px 98px}
+.hero .drips{position:absolute;left:0;right:0;top:calc(100% - 18px);width:100%;height:auto;display:block}
+.hero .kicker{font-family:var(--f-hand);font-size:24px;line-height:1;margin:0 0 4px}
+.hero h1{font-weight:800;font-size:40px;line-height:1.02;letter-spacing:-.01em}
+.hero p{margin:10px 0 0;max-width:22ch;font-weight:600;font-size:17px;line-height:1.35}
+.hero-jar{position:absolute;right:10px;top:34px;transform:rotate(7deg);filter:drop-shadow(0 6px 0 rgba(58,36,16,.12))}
+.stamp{position:absolute;right:16px;bottom:18px;width:86px;height:86px;border-radius:50%;background:#3A2410;color:#FFC21A;display:grid;place-items:center;text-align:center;font-family:var(--f-display);font-weight:800;font-size:11px;line-height:1.15;letter-spacing:.04em;text-transform:uppercase;transform:rotate(-10deg);border:3px dashed #FFC21A}
+.hero .btn-dark{background:#3A2410;color:#FFF3D6}
+.hero-actions{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap;max-width:230px}
+
+.section-title{font-weight:800;font-size:22px;margin:30px 0 12px}
+.section-title small{font-family:var(--f-hand);font-weight:400;font-size:20px;color:var(--muted);margin-left:6px}
+
+/* Значки доверия */
+.trust{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.trust .t{background:var(--card);border-radius:20px;padding:14px;position:relative}
+.trust .t::after,.card::after,.about-box::after{content:"";position:absolute;inset:5px;border:1.5px dashed var(--line);border-radius:16px;pointer-events:none}
+.trust .ico{width:40px;height:40px;border-radius:12px;background:var(--honey);display:grid;place-items:center;margin-bottom:8px}
+.trust b{display:block;font-family:var(--f-display);font-size:15px}
+.trust span{font-size:13px;color:var(--muted);line-height:1.3;display:block}
+
+/* Блок «пасечник» */
+.about-box{position:relative;background:var(--card);border-radius:22px;padding:16px;display:grid;grid-template-columns:84px 1fr;gap:14px;align-items:center}
+.photo-slot{width:84px;height:84px;border-radius:20px;background:var(--paper-2);border:2px dashed var(--line);display:grid;place-items:center;text-align:center;font-size:11px;color:var(--muted);line-height:1.2;padding:4px}
+.about-box p{margin:0;font-size:14px}
+.about-box .hand{font-size:22px;color:var(--honey-deep);display:block;line-height:1.1;margin-bottom:2px}
+
+.gift{display:flex;gap:12px;align-items:center;background:var(--leaf-soft);border-radius:20px;padding:14px;margin-top:14px}
+.gift p{margin:0;font-size:14px;line-height:1.35}
+.gift .gi{flex:none;width:44px;height:44px;border-radius:14px;background:var(--leaf);display:grid;place-items:center}
+
+.menu{display:grid;gap:8px}
+.menu>*{display:flex;justify-content:space-between;align-items:center;gap:12px;width:100%;min-height:60px;background:var(--card);border:0;border-radius:18px;padding:12px 16px;text-align:left;font-weight:800;text-decoration:none;color:var(--ink)}
+.menu small{display:block;font-weight:600;color:var(--muted);font-size:13px}
+.menu .arr{flex:none;width:32px;height:32px;border-radius:50%;background:var(--honey);display:grid;place-items:center}
+
+/* ---------- Каталог ---------- */
+.chips{display:flex;gap:8px;overflow-x:auto;padding:6px 0 6px;margin:0 -16px;padding-inline:16px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;min-height:44px;border:2px solid var(--ink);background:transparent;border-radius:999px;padding:8px 16px;font-weight:800;font-size:14px}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:10px}
+.card{position:relative;background:var(--card);border:0;border-radius:22px;padding:10px 10px 12px;display:flex;flex-direction:column;gap:6px;text-align:left;width:100%}
+.card .pic{position:relative;aspect-ratio:1/1.05;border-radius:16px;display:grid;place-items:center;max-width:100%;overflow:hidden;
+  background:radial-gradient(circle at 50% 38%, color-mix(in srgb, var(--honey) 38%, var(--card)) 0%, color-mix(in srgb, var(--honey) 10%, var(--card)) 78%)}
+.card .pic img,.sheet .pic img{width:100%;height:100%;object-fit:cover}
+.card h3{font-size:15px;font-weight:700;line-height:1.2;padding:0 4px;margin-top:2px}
+.card .bottom{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 4px}
+.price{font-weight:800;font-variant-numeric:tabular-nums}
+.price small{display:block;font-weight:600;font-size:11px;color:var(--muted);line-height:1}
+.plus{flex:none;width:44px;height:44px;border-radius:50%;border:0;background:var(--honey);color:var(--on-honey);display:grid;place-items:center;box-shadow:0 3px 0 var(--honey-deep);z-index:2;position:relative}
+.plus:active{transform:translateY(2px);box-shadow:0 1px 0 var(--honey-deep)}
+.sticker{position:absolute;left:6px;top:8px;z-index:1;transform:rotate(-5deg);font-size:11px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;background:var(--ink);color:var(--honey);border-radius:8px;padding:3px 8px}
+.sticker.green{background:var(--leaf);color:#fff}
+:root[data-theme="dark"] .sticker.green{color:#13200B}
+
+/* Плавающая корзина над панелью */
+.cartbar{position:fixed;left:16px;right:16px;bottom:calc(72px + env(safe-area-inset-bottom,0px));max-width:448px;margin:0 auto;z-index:12;background:var(--ink);color:var(--paper);border:0;border-radius:18px;min-height:56px;padding:8px 8px 8px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;font-weight:800;white-space:nowrap;box-shadow:0 8px 22px rgba(30,16,4,.28)}
+.cartbar .go{background:var(--honey);color:var(--on-honey);border-radius:12px;padding:10px 14px;font-size:14px}
+
+/* ---------- Карточка товара ---------- */
+.sheet-wrap{position:fixed;inset:0;background:rgba(30,16,4,.55);display:flex;align-items:flex-end;justify-content:center;z-index:30}
+.sheet{position:relative;background:var(--paper);width:100%;max-width:480px;border-radius:28px 28px 0 0;padding:14px 16px calc(18px + env(safe-area-inset-bottom,0px));max-height:92%;overflow-y:auto}
+.sheet .grab{width:44px;height:5px;border-radius:3px;background:var(--line);margin:0 auto 10px}
+.sheet .close{position:absolute;right:12px;top:12px;width:44px;height:44px;border-radius:50%;border:0;background:var(--card);display:grid;place-items:center;z-index:3}
+.sheet .pic{position:relative;height:200px;border-radius:22px;display:grid;place-items:center;overflow:hidden;
+  background:radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--honey) 45%, var(--card)) 0%, color-mix(in srgb, var(--honey) 12%, var(--card)) 80%)}
+.sheet h2{font-weight:800;font-size:24px;margin:16px 0 6px}
+.sheet p{margin:0 0 14px;color:var(--muted)}
+.lbl{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.sizes{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px}
+.size{min-height:56px;border:2px solid var(--line);background:var(--card);border-radius:16px;padding:8px 14px;font-weight:800;font-variant-numeric:tabular-nums;text-align:left}
+.size small{display:block;font-weight:700;color:var(--muted)}
+.size[aria-pressed="true"]{border-color:var(--honey-deep);background:color-mix(in srgb, var(--honey) 35%, var(--card))}
+.row{display:flex;gap:12px;align-items:center;justify-content:space-between}
+.qty{display:flex;align-items:center;gap:6px;background:var(--card);border-radius:16px;padding:4px}
+.qty button{width:44px;height:44px;border-radius:12px;border:0;background:var(--paper-2);font-weight:800;font-size:20px}
+.qty b{min-width:28px;text-align:center;font-variant-numeric:tabular-nums}
+
+/* ---------- Корзина ---------- */
+.progress{background:var(--card);border-radius:20px;padding:14px;margin-bottom:12px}
+.progress p{margin:0 0 8px;font-size:14px;font-weight:700}
+.bar{height:14px;border-radius:7px;background:var(--paper-2);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--honey);border-radius:7px;transition:width .35s ease}
+.line{display:flex;gap:12px;align-items:center;background:var(--card);border-radius:18px;padding:10px 12px;margin-bottom:8px}
+.line .pic{width:56px;height:56px;border-radius:14px;display:grid;place-items:center;flex:none;background:color-mix(in srgb, var(--honey) 22%, var(--card));overflow:hidden}
+.line .info{flex:1;min-width:0}
+.line .info b{display:block;font-size:15px;font-family:var(--f-display)}
+.line .info span{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.line .del{width:44px;height:44px;border-radius:50%;border:0;background:transparent;color:var(--muted);font-size:18px}
+.total{display:flex;justify-content:space-between;align-items:baseline;font-family:var(--f-display);font-weight:800;font-size:22px;margin:16px 0;font-variant-numeric:tabular-nums}
+.field{display:grid;gap:4px;margin-bottom:12px}
+.field label{font-size:13px;font-weight:800;color:var(--muted)}
+.field input,.field select,.field textarea{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:12px;width:100%;min-height:48px}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--honey-deep);outline:0}
+.err{color:var(--danger);font-size:14px;font-weight:700;margin:0 0 10px}
+.empty{text-align:center;color:var(--muted);padding:46px 0}
+.empty .hand{display:block;font-size:30px;color:var(--ink);margin-bottom:8px}
+.bot{background:var(--card);border-radius:20px;padding:14px;margin-top:14px}
+.bot .head{display:flex;align-items:center;gap:8px;font-weight:800;font-size:14px;margin-bottom:8px}
+.bot .bubble{background:var(--paper);border-radius:14px;padding:12px;white-space:pre-wrap;font-size:14px;font-variant-numeric:tabular-nums}
+.consent{font-size:12px;color:var(--muted);margin:0 0 12px}
+
+/* ---------- Текстовые страницы ---------- */
+.page p{margin:0 0 12px}
+.std{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.std li{background:var(--card);border-radius:16px;padding:12px 14px}
+.link{font-weight:800;color:var(--leaf)}
+
+/* ---------- Нижняя панель ---------- */
+.tabbar{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:2px solid var(--line);padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));z-index:20}
+.tabbar nav{max-width:480px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr)}
+.tab{background:none;border:0;display:grid;justify-items:center;gap:2px;font-size:11px;font-weight:800;color:var(--muted);padding:6px 0;min-height:52px;position:relative}
+.tab .ti{width:44px;height:28px;border-radius:14px;display:grid;place-items:center}
+.tab[aria-current="page"]{color:var(--ink)}
+.tab[aria-current="page"] .ti{background:var(--honey)}
+.tab .count{position:absolute;top:2px;right:calc(50% - 28px);background:var(--ink);color:var(--honey);border-radius:999px;font-size:11px;min-width:18px;height:18px;line-height:18px;padding:0 5px;text-align:center}
+.bump{animation:bump .35s}
+@keyframes bump{40%{transform:scale(1.35)}}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(140px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:14px;font-weight:800;font-size:14px;z-index:40}
+.fly{position:fixed;z-index:50;pointer-events:none}
+@media (prefers-reduced-motion:no-preference){.sheet{animation:up .24s ease-out}@keyframes up{from{transform:translateY(40px);opacity:.5}}}
+</style>
+</head>
+<body>
+<div class="app">
+  <p class="demo-note">Демо-версия · цены примерные</p>
+
+  <!-- ===== ГЛАВНАЯ ===== -->
+  <section id="v-home">
+    <div class="hero">
+      <p class="kicker">пасека Алексея</p>
+      <h1>ЭКО<br>ферма</h1>
+      <p>Мёд и продукты пчеловодства по эко-стандарту</p>
+      <div class="hero-jar" id="hero-jar" aria-hidden="true"></div>
+      <div class="hero-actions">
+        <button class="btn btn-dark" data-go="catalog">Смотреть каталог</button>
+      </div>
+      <div class="stamp" aria-hidden="true">Без сахара<br>и химии</div>
+      <!-- Капли мёда, стекающие с обложки -->
+      <svg class="drips" viewBox="0 0 400 46" aria-hidden="true">
+        <g fill="#FFC21A">
+          <rect x="30" y="0" width="340" height="18"/>
+          <rect x="50" y="0" width="16" height="32" rx="8"/><circle cx="58" cy="34" r="8"/>
+          <rect x="112" y="0" width="11" height="22" rx="5.5"/><circle cx="117.5" cy="24" r="5.5"/>
+          <rect x="196" y="0" width="18" height="38" rx="9"/><circle cx="205" cy="38" r="9"/>
+          <rect x="286" y="0" width="12" height="26" rx="6"/><circle cx="292" cy="27" r="6"/>
+          <rect x="336" y="0" width="14" height="32" rx="7"/><circle cx="343" cy="33" r="7.5"/>
+        </g>
+      </svg>
+    </div>
+
+    <h2 class="section-title" style="margin-top:6px">Почему нам доверяют</h2>
+    <div class="trust">
+      <div class="t"><div class="ico"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path fill="#3A2410" d="M12 2 3 7v10l9 5 9-5V7zm0 2.3 6.6 3.7L12 11.7 5.4 8zM5 9.7l6 3.4v6.6l-6-3.3zm14 0v6.7l-6 3.3v-6.6z"/></svg></div><b>Без сахара</b><span>Пчёл не подкармливаем сиропом</span></div>
+      <div class="t"><div class="ico"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path fill="#3A2410" d="M20 4C9 4 4 9 4 16c0 1.4.3 2.7.8 3.9L3 22l2.1.3L6.6 20c1.1.6 2.5 1 4.4 1 7 0 9-7 9-17Zm-9 14c-1.5 0-2.6-.3-3.4-.8C9.3 13.5 12 10.6 15 9c-2.600 1.800-4.400 4.500-5 7.500.4.1.9.2 1.400.2 2.600 0 5-1.800 5.600-6.500.2 4.800-1.600 7.800-6 7.800Z"/></svg></div><b>Без химии</b><span>Нет антибиотиков на пасеке</span></div>
+      <div class="t"><div class="ico"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path fill="#3A2410" d="M8 2h8v3H8zM6 7h12a2 2 0 0 1 2 2v10a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V9a2 2 0 0 1 2-2Zm1 5v6h3v-6z"/></svg></div><b>Стекло, не пластик</b><span>Банки и натуральная тара</span></div>
+      <div class="t"><div class="ico"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path fill="#3A2410" d="M6 2h8l6 6v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm7 1.500V9h5.500zM8 13h8v2H8zm0 4h8v2H8z"/></svg></div><b>Инструкция</b><span>PDF к каждому продукту</span></div>
+    </div>
+
+    <h2 class="section-title">Кто делает<small>знакомьтесь</small></h2>
+    <div class="about-box">
+      <div class="photo-slot">Фото<br>пасечника</div>
+      <div>
+        <span class="hand">Алексей, пчеловод</span>
+        <p>Продукцию делаем для своей семьи и близких. Излишки продаём тем, кому важен состав.</p>
+      </div>
+    </div>
+
+    <div class="gift">
+      <div class="gi"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M20 7h-2.2A3 3 0 0 0 12 4.4 3 3 0 0 0 6.2 7H4a1 1 0 0 0-1 1v3h18V8a1 1 0 0 0-1-1Zm-5-1a1 1 0 1 1 0 2h-2a2 2 0 0 1 2-2Zm-6 0a2 2 0 0 1 2 2H9a1 1 0 1 1 0-2ZM4 13v6a1 1 0 0 0 1 1h6v-7H4Zm9 7h6a1 1 0 0 0 1-1v-6h-7v7Z"/></svg></div>
+      <p><b>Подарок к заказу.</b> Положим забрус или мумие в посылку.</p>
+    </div>
+
+    <h2 class="section-title">Разделы</h2>
+    <div class="menu">
+      <button data-go="catalog"><span>Каталог<small>Мёд, перга, пыльца, экстракты</small></span><span class="arr" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24"><path fill="#3A2410" d="M9 4l8 8-8 8-2-2 6-6-6-6z"/></svg></span></button>
+      <button data-go="delivery"><span>Доставка и оплата<small>СДЭК по всей России</small></span><span class="arr" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24"><path fill="#3A2410" d="M9 4l8 8-8 8-2-2 6-6-6-6z"/></svg></span></button>
+      <button data-go="about"><span>Наш эко-стандарт<small>Как мы работаем на пасеке</small></span><span class="arr" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24"><path fill="#3A2410" d="M9 4l8 8-8 8-2-2 6-6-6-6z"/></svg></span></button>
+      <a href="https://avito.ru/brands/b554c4e65235cee407ccef40d873f9ff" target="_blank" rel="noopener"><span>Отзывы покупателей<small>На Авито</small></span><span class="arr" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24"><path fill="#3A2410" d="M7 17 17 7M9 7h8v8" stroke="#3A2410" stroke-width="2.500" fill="none"/></svg></span></a>
+    </div>
+  </section>
+
+  <!-- ===== КАТАЛОГ ===== -->
+  <section id="v-catalog" hidden>
+    <h2 class="section-title" style="margin-top:14px">Каталог</h2>
+    <div class="chips" id="chips" role="group" aria-label="Категории"></div>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <!-- ===== КОРЗИНА ===== -->
+  <section id="v-cart" hidden>
+    <h2 class="section-title" style="margin-top:14px">Корзина</h2>
+    <div id="cart-list"></div>
+    <div id="cart-form" hidden>
+      <div class="progress"><p id="gift-text"></p><div class="bar"><i id="gift-bar" style="width:0"></i></div></div>
+      <div class="total"><span>Итого</span><span id="cart-total"></span></div>
+      <form id="order" novalidate>
+        <div class="field"><label for="f-name">Имя</label><input id="f-name" autocomplete="name" placeholder="Как к вам обращаться"></div>
+        <div class="field"><label for="f-phone">Телефон</label><input id="f-phone" type="tel" autocomplete="tel" placeholder="+7 900 000-00-00"></div>
+        <div class="field"><label for="f-city">Город</label><input id="f-city" placeholder="Например, Екатеринбург"></div>
+        <div class="field"><label for="f-ship">Доставка</label>
+          <select id="f-ship"><option>СДЭК, до пункта выдачи</option><option>СДЭК, курьером</option><option>Самовывоз</option></select></div>
+        <div class="field"><label for="f-note">Комментарий</label><textarea id="f-note" rows="2" placeholder="Пожелания к заказу"></textarea></div>
+        <p class="consent">Нажимая «Оформить заказ», вы соглашаетесь на обработку имени и телефона для связи по заказу.</p>
+        <p class="err" id="f-err" hidden></p>
+        <button class="btn btn-honey btn-block" id="submit-btn" type="submit">Оформить заказ</button>
+      </form>
+    </div>
+    <div id="sent" hidden>
+      <div class="gift" style="margin-top:0"><div class="gi"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M9 16.2 4.800 12l-1.400 1.400L9 19 21 7l-1.400-1.400z"/></svg></div><p><b>Заказ принят.</b> Алексей напишет вам в Telegram, чтобы подтвердить состав и доставку.</p></div>
+      <div class="bot">
+        <div class="head">
+          <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="var(--leaf)"/><path d="M6 12l11-4-2 9-3-2-2 2v-3l5-4-6 3z" fill="#fff"/></svg>
+          Так этот заказ придёт Алексею в бота
+        </div>
+        <div class="bubble" id="bot-msg"></div>
+      </div>
+      <button class="btn btn-line btn-block" style="margin-top:12px" data-go="home">На главную</button>
+    </div>
+  </section>
+
+  <!-- ===== О ПАСЕКЕ ===== -->
+  <section id="v-about" class="page" hidden>
+    <h2 class="section-title" style="margin-top:14px">О пасеке</h2>
+    <p>Меня зовут Алексей, я пчеловод. Продукцию делаем прежде всего для своей семьи и близких, а излишки продаём тем, кому важен состав.</p>
+    <p>Работаем так, как пчеловоды работали раньше, без ускорителей и подкормок.</p>
+    <h2 class="section-title">Наш эко-стандарт</h2>
+    <ul class="std">
+      <li>Не подкармливаем пчёл сахарным сиропом</li>
+      <li>Не используем антибиотики и химию на пасеке</li>
+      <li>Не храним продукцию в пластике</li>
+      <li>Падевый мёд собираем только в редкие годы и продаём ограниченно</li>
+    </ul>
+    <p style="margin-top:16px"><a class="link" href="https://avito.ru/brands/b554c4e65235cee407ccef40d873f9ff" target="_blank" rel="noopener">Читать отзывы на Авито ↗</a></p>
+  </section>
+
+  <!-- ===== ДОСТАВКА ===== -->
+  <section id="v-delivery" class="page" hidden>
+    <h2 class="section-title" style="margin-top:14px">Доставка и оплата</h2>
+    <ul class="std">
+      <li><b>СДЭК по всей России.</b> Отправляем несколько раз в неделю, о дне отправки пишем в канале.</li>
+      <li><b>Упаковка.</b> Стеклянные банки пакуем плотно. Если посылка повреждена, разберёмся и отправим заново.</li>
+      <li><b>Оплата.</b> После подтверждения заказа Алексей пришлёт реквизиты.</li>
+      <li><b>Вопросы.</b> Пишите напрямую: <a class="link" href="https://t.me/ecohoneys" target="_blank" rel="noopener">@ecohoneys</a></li>
+    </ul>
+  </section>
+</div>
+
+<!-- Плавающая корзина (видна в каталоге, когда что-то выбрано) -->
+<button class="cartbar" id="cartbar" hidden data-go="cart">
+  <span id="cartbar-text"></span><span class="go">Открыть корзину</span>
+</button>
+
+<!-- Лист с карточкой товара -->
+<div class="sheet-wrap" id="sheet" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="s-title">
+    <div class="grab" aria-hidden="true"></div>
+    <button class="close" id="s-close" aria-label="Закрыть"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path stroke="currentColor" stroke-width="3" stroke-linecap="round" d="M5 5l14 14M19 5 5 19"/></svg></button>
+    <div class="pic" id="s-pic"></div>
+    <h2 id="s-title"></h2>
+    <p id="s-desc"></p>
+    <div class="lbl">Объём</div>
+    <div class="sizes" id="s-sizes"></div>
+    <div class="row">
+      <div class="qty"><button id="q-minus" aria-label="Меньше">−</button><b id="q-val">1</b><button id="q-plus" aria-label="Больше">+</button></div>
+      <button class="btn btn-honey" id="s-add" style="flex:1">В корзину</button>
+    </div>
+  </div>
+</div>
+
+<div class="tabbar"><nav>
+  <button class="tab" data-go="home" aria-current="page"><span class="ti"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 3 3 10v10h6v-6h6v6h6V10z"/></svg></span>Главная</button>
+  <button class="tab" data-go="catalog"><span class="ti"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 4h7v7H4zm9 0h7v7h-7zM4 13h7v7H4zm9 0h7v7h-7z"/></svg></span>Каталог</button>
+  <button class="tab" data-go="cart" id="tab-cart"><span class="ti" id="cart-ico"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 18a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm10 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4ZM5.200 4l.6 3H21l-2 8H7.400L4.400 2H1v2h4.200Z"/></svg></span>Корзина<span class="count" id="cart-count" hidden></span></button>
+  <button class="tab" data-go="about"><span class="ti"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-5 0-9 2.500-9 6v2h18v-2c0-3.500-4-6-9-6Z"/></svg></span>О нас</button>
+</nav></div>
+
+<div class="toast" id="toast" hidden></div>
+
+<script>
+/* =========================================================
+   ДАННЫЕ. В настоящей апке этот список придёт с сервера,
+   а владелец будет менять его через бота. Цены — демо.
+   Когда появятся настоящие фото, достаточно добавить товару
+   поле photo: "photos/gorchak.jpg" — оно заменит рисунок банки.
+   ========================================================= */
+const GIFT_FROM = 2500;   // демо-порог подарка; настоящий порог назначит владелец
+
+const CATEGORIES = [
+  {id:'all',   name:'Всё'},
+  {id:'honey', name:'Мёд'},
+  {id:'bee',   name:'Пчеловодство'},
+  {id:'other', name:'Экстракты и другое'}
+];
+
+const PRODUCTS = [
+  {id:1, cat:'honey', name:'Мёд разнотравье', color:'#E7A426',
+   desc:'Основной мёд пасеки, собран с луговых и полевых трав. Мягкий цветочный вкус.',
+   sizes:[{label:'0,5 л',price:900},{label:'1 л',price:1700},{label:'3 л',price:4800}]},
+  {id:2, cat:'honey', name:'Падевый мёд', color:'#5E3B17', tag:'Редкий',
+   desc:'Тёмный мёд с густым, необычным вкусом. Пасека собирает его раз в несколько лет, партия ограничена.',
+   sizes:[{label:'0,5 л',price:1500},{label:'1 л',price:2800}]},
+  {id:3, cat:'bee', name:'Перга', color:'#92592A',
+   desc:'Пчелиный хлеб: пыльца, которую пчёлы утрамбовали в соты и запечатали мёдом.',
+   sizes:[{label:'100 г',price:700},{label:'250 г',price:1600}]},
+  {id:4, cat:'bee', name:'Перга в меду', color:'#C07A2A',
+   desc:'Перга, смешанная с мёдом разнотравья. Удобно есть ложкой.',
+   sizes:[{label:'250 мл',price:900},{label:'500 мл',price:1700}]},
+  {id:5, cat:'bee', name:'Пчелиная пыльца', color:'#EBB830',
+   desc:'Обножка, собранная с дикорастущих трав. Сухие гранулы с цветочным вкусом.',
+   sizes:[{label:'100 г',price:450},{label:'250 г',price:1000}]},
+  {id:6, cat:'bee', name:'Забрус', color:'#D9B965', tag:'Подарок к заказу', tagGreen:true,
+   desc:'Восковые «крышечки» с сот вместе с мёдом. Жуётся как натуральная жвачка.',
+   sizes:[{label:'200 г',price:700}]},
+  {id:7, cat:'bee', name:'Маточное молочко', color:'#EDDDB0',
+   desc:'Продукт, которым пчёлы выкармливают матку. Хранится в холодильнике.',
+   sizes:[{label:'10 г',price:1200}]},
+  {id:8, cat:'other', name:'Водный экстракт прополиса', color:'#6E4B22',
+   desc:'Экстракт прополиса на воде, без спирта.',
+   sizes:[{label:'30 мл',price:600},{label:'100 мл',price:1500}]},
+  {id:9, cat:'other', name:'Экстракт 24 трав на меду', color:'#587A31', tag:'Без спирта', tagGreen:true,
+   desc:'Сбор из 24 трав на основе нашего мёда. Без сахара и спирта, подходит и детям, и взрослым.',
+   sizes:[{label:'250 мл',price:1400}]},
+  {id:10, cat:'other', name:'Горное мумие', color:'#33281F',
+   desc:'Натуральное горное мумие.',
+   sizes:[{label:'50 г',price:900}]},
+  {id:11, cat:'other', name:'Медовое мыло', color:'#EAC27C',
+   desc:'Мыло ручной работы с мёдом, с заметным медовым ароматом.',
+   sizes:[{label:'1 шт',price:350}]},
+  {id:12, cat:'other', name:'Масло гхи', color:'#F4CB4E',
+   desc:'Топлёное масло из молока коров свободного выгула.',
+   sizes:[{label:'250 мл',price:900}]}
+];
+
+/* =========================================================
+   СОСТОЯНИЕ: что открыто и что лежит в корзине.
+   ========================================================= */
+const state = { view:'home', cat:'all', cart:[], sheet:null, sent:false };
+const $ = s => document.querySelector(s);
+const rub = n => n.toLocaleString('ru-RU') + ' ₽';
+const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- Telegram: родные кнопки и вибрация ----------
+   Если страница открыта внутри Telegram, используем его нижнюю кнопку,
+   кнопку «Назад» и лёгкую вибрацию. Вне Telegram всё работает как обычный сайт. */
+const tg = window.Telegram && window.Telegram.WebApp;
+const inTg = !!(tg && tg.initData);
+if (inTg) {
+  try { tg.ready(); tg.expand(); tg.setHeaderColor('#FFC21A'); } catch(e){}
+}
+function haptic(kind){
+  if (!inTg || !tg.HapticFeedback) return;
+  try {
+    if (kind==='ok') tg.HapticFeedback.notificationOccurred('success');
+    else if (kind==='err') tg.HapticFeedback.notificationOccurred('error');
+    else tg.HapticFeedback.impactOccurred('light');
+  } catch(e){}
+}
+
+/* ---------- Рисуем банку нужного цвета (пока нет фото) ---------- */
+let jid = 0;
+function jar(color, size){
+  const id = 'jg' + (jid++);
+  return `<svg width="${size}" height="${Math.round(size*1.15)}" viewBox="0 0 100 115" aria-hidden="true">
+    <defs><linearGradient id="${id}" x1="0" x2="1"><stop offset="0" stop-color="${color}" stop-opacity=".82"/><stop offset=".5" stop-color="${color}"/><stop offset="1" stop-color="${color}" stop-opacity=".78"/></linearGradient></defs>
+    <rect x="26" y="4" width="48" height="14" rx="4" fill="#5A3A18"/><rect x="26" y="9" width="48" height="2" fill="#000" opacity=".15"/>
+    <path d="M30 18h40v6c0 3 8 6 8 14v60a12 12 0 0 1-12 12H34a12 12 0 0 1-12-12V38c0-8 8-11 8-14z" fill="url(#${id})"/>
+    <rect x="29" y="52" width="42" height="36" rx="7" fill="#FFF3D6"/>
+    <polygon points="50,59 57,63 57,71 50,75 43,71 43,63" fill="#E39A0B"/>
+    <rect x="37" y="79" width="26" height="2.600" rx="1.300" fill="#5A3A18" opacity=".55"/>
+    <path d="M30 32c-3.500 3-5 6.500-5 12v48" stroke="#fff" stroke-opacity=".38" stroke-width="5" stroke-linecap="round" fill="none"/>
+  </svg>`;
+}
+function pic(p, size){ return p.photo ? `<img src="${p.photo}" alt="${p.name}">` : jar(p.color, size); }
+$('#hero-jar').innerHTML = jar('#E7A426', 96);
+
+/* ---------- Переключение экранов ---------- */
+function go(view){
+  state.view = view;
+  ['home','catalog','cart','about','delivery'].forEach(v => $('#v-'+v).hidden = v !== view);
+  document.querySelectorAll('.tab').forEach(t => {
+    const on = t.dataset.go === view || (view==='delivery' && t.dataset.go==='home');
+    if (on) t.setAttribute('aria-current','page'); else t.removeAttribute('aria-current');
+  });
+  if (view === 'cart') renderCart();
+  updateBars();
+  window.scrollTo(0,0);
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-go]');
+  if (b){ haptic(); go(b.dataset.go); }
+});
+
+/* ---------- Каталог ---------- */
+function renderChips(){
+  $('#chips').innerHTML = CATEGORIES.map(c =>
+    `<button class="chip" data-cat="${c.id}" aria-pressed="${c.id===state.cat}">${c.name}</button>`).join('');
+}
+function renderGrid(){
+  const list = PRODUCTS.filter(p => state.cat==='all' || p.cat===state.cat);
+  $('#grid').innerHTML = list.map(p => `
+    <div class="card" data-id="${p.id}" role="button" tabindex="0" aria-label="${p.name}">
+      <div class="pic">${p.tag ? `<span class="sticker${p.tagGreen?' green':''}">${p.tag}</span>` : ''}${pic(p,84)}</div>
+      <h3>${p.name}</h3>
+      <div class="bottom">
+        <span class="price"><small>от</small>${rub(Math.min(...p.sizes.map(s=>s.price)))}</span>
+        <button class="plus" data-quick="${p.id}" aria-label="Быстро добавить: ${p.name}"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path stroke="currentColor" stroke-width="3.200" stroke-linecap="round" d="M12 5v14M5 12h14"/></svg></button>
+      </div>
+    </div>`).join('');
+}
+$('#chips').addEventListener('click', e => {
+  const c = e.target.closest('[data-cat]'); if (!c) return;
+  haptic(); state.cat = c.dataset.cat; renderChips(); renderGrid();
+});
+$('#grid').addEventListener('click', e => {
+  const q = e.target.closest('[data-quick]');
+  if (q){ e.stopPropagation(); addToCart(+q.dataset.quick, 0, 1, q); return; }
+  const c = e.target.closest('[data-id]'); if (c) openSheet(+c.dataset.id);
+});
+$('#grid').addEventListener('keydown', e => {
+  if (e.key!=='Enter' && e.key!==' ') return;
+  const c = e.target.closest('.card[data-id]'); if (c && e.target===c){ e.preventDefault(); openSheet(+c.dataset.id); }
+});
+
+/* ---------- Карточка товара ---------- */
+function openSheet(id){
+  const p = PRODUCTS.find(x => x.id===id);
+  state.sheet = {p, size:0, qty:1};
+  $('#s-pic').innerHTML = (p.tag ? `<span class="sticker${p.tagGreen?' green':''}">${p.tag}</span>` : '') + pic(p,130);
+  $('#s-title').textContent = p.name;
+  $('#s-desc').textContent = p.desc;
+  renderSheet();
+  $('#sheet').hidden = false;
+  updateBars();
+}
+function closeSheet(){ $('#sheet').hidden = true; updateBars(); }
+function renderSheet(){
+  const {p,size,qty} = state.sheet;
+  $('#s-sizes').innerHTML = p.sizes.map((s,i) =>
+    `<button class="size" data-i="${i}" aria-pressed="${i===size}">${s.label}<small>${rub(s.price)}</small></button>`).join('');
+  $('#q-val').textContent = qty;
+  $('#s-add').textContent = 'В корзину · ' + rub(p.sizes[size].price * qty);
+}
+$('#s-sizes').addEventListener('click', e => {
+  const b = e.target.closest('[data-i]'); if (!b) return;
+  haptic(); state.sheet.size = +b.dataset.i; renderSheet();
+});
+$('#q-minus').onclick = () => { haptic(); state.sheet.qty = Math.max(1, state.sheet.qty-1); renderSheet(); };
+$('#q-plus').onclick  = () => { haptic(); state.sheet.qty = Math.min(20, state.sheet.qty+1); renderSheet(); };
+$('#s-close').onclick = closeSheet;
+$('#sheet').addEventListener('click', e => { if (e.target.id==='sheet') closeSheet(); });
+
+/* В корзину кладём только номер товара, объём и количество.
+   Цену в настоящей апке пересчитает сервер, а не поверит витрине. */
+function addToCart(id, size, qty, fromEl){
+  const same = state.cart.find(l => l.id===id && l.size===size);
+  if (same) same.qty = Math.min(20, same.qty + qty); else state.cart.push({id, size, qty});
+  state.sent = false;
+  haptic('ok');
+  if (fromEl) fly(fromEl, PRODUCTS.find(p=>p.id===id));
+  updateCount(); updateBars();
+}
+$('#s-add').onclick = () => {
+  const {p,size,qty} = state.sheet;
+  const from = $('#s-add');
+  addToCart(p.id, size, qty, from);
+  closeSheet();
+  toast('Добавлено в корзину');
+};
+
+/* Банка «летит» в корзину */
+function fly(fromEl, p){
+  const target = $('#cart-ico'); if (!target || reduce) { bump(); return; }
+  const a = fromEl.getBoundingClientRect(), b = target.getBoundingClientRect();
+  const el = document.createElement('div'); el.className = 'fly'; el.innerHTML = jar(p.color, 34);
+  el.style.left = (a.left + a.width/2 - 17) + 'px'; el.style.top = (a.top + a.height/2 - 20) + 'px';
+  document.body.appendChild(el);
+  const dx = (b.left + b.width/2) - (a.left + a.width/2), dy = (b.top + b.height/2) - (a.top + a.height/2);
+  el.animate([
+    {transform:'translate(0,0) scale(1) rotate(0)', opacity:1},
+    {transform:`translate(${dx*0.5}px,${dy*0.5 - 60}px) scale(.9) rotate(-12deg)`, opacity:1, offset:.5},
+    {transform:`translate(${dx}px,${dy}px) scale(.35) rotate(10deg)`, opacity:.6}
+  ], {duration:620, easing:'cubic-bezier(.4,.1,.3,1)'}).onfinish = () => { el.remove(); bump(); };
+}
+function bump(){ const c = $('#cart-count'); c.classList.remove('bump'); void c.offsetWidth; c.classList.add('bump'); }
+
+/* ---------- Корзина ---------- */
+const cartTotal = () => state.cart.reduce((sum,l) => sum + PRODUCTS.find(x=>x.id===l.id).sizes[l.size].price * l.qty, 0);
+const cartQty = () => state.cart.reduce((s,l)=>s+l.qty,0);
+function updateCount(){
+  const n = cartQty(); $('#cart-count').hidden = n===0; $('#cart-count').textContent = n;
+}
+/* Плавающая корзина, нижняя кнопка Telegram и кнопка «Назад» */
+function updateBars(){
+  const n = cartQty();
+  const showBar = n>0 && state.view==='catalog' && $('#sheet').hidden;
+  $('#cartbar').hidden = !showBar;
+  if (showBar) $('#cartbar-text').textContent = `${n} шт. · ${rub(cartTotal())}`;
+  if (!inTg) return;
+  try {
+    const mb = tg.MainButton;
+    if (state.view==='cart' && n>0 && !state.sent && $('#sheet').hidden){ mb.setText('Оформить заказ · ' + rub(cartTotal())); mb.show(); }
+    else mb.hide();
+    if (state.view!=='home' || !$('#sheet').hidden) tg.BackButton.show(); else tg.BackButton.hide();
+  } catch(e){}
+}
+function renderCart(){
+  $('#sent').hidden = !state.sent;
+  if (state.sent){ $('#cart-list').innerHTML=''; $('#cart-form').hidden = true; return; }
+  if (!state.cart.length){
+    $('#cart-list').innerHTML = `<div class="empty"><span class="hand">Здесь пока пусто</span>Выберите что-нибудь вкусное в каталоге.<br><br><button class="btn btn-honey" data-go="catalog">Перейти в каталог</button></div>`;
+    $('#cart-form').hidden = true; return;
+  }
+  $('#cart-list').innerHTML = state.cart.map((l,i) => {
+    const p = PRODUCTS.find(x=>x.id===l.id), s = p.sizes[l.size];
+    return `<div class="line">
+      <div class="pic">${pic(p,36)}</div>
+      <div class="info"><b>${p.name}</b><span>${s.label} × ${l.qty} · ${rub(s.price*l.qty)}</span></div>
+      <button class="del" data-del="${i}" aria-label="Убрать ${p.name}">✕</button>
+    </div>`;
+  }).join('');
+  const t = cartTotal(), left = GIFT_FROM - t;
+  $('#gift-text').textContent = left > 0 ? `Добавьте ещё на ${rub(left)} и получите подарок: забрус или мумие` : 'Подарок за вами: положим забрус или мумие';
+  $('#gift-bar').style.width = Math.min(100, Math.round(t / GIFT_FROM * 100)) + '%';
+  $('#cart-total').textContent = rub(t);
+  $('#cart-form').hidden = false;
+  if (inTg) $('#submit-btn').hidden = true;   /* в Telegram вместо неё работает нижняя кнопка */
+}
+$('#cart-list').addEventListener('click', e => {
+  const d = e.target.closest('[data-del]'); if (!d) return;
+  haptic(); state.cart.splice(+d.dataset.del,1); updateCount(); renderCart(); updateBars();
+});
+
+/* ---------- Оформление ----------
+   Демо: никуда не отправляем, только показываем, как сообщение
+   выглядело бы у владельца в боте. Данные нигде не сохраняются. */
+function submitOrder(){
+  const name = $('#f-name').value.trim(), phone = $('#f-phone').value.trim(), city = $('#f-city').value.trim();
+  const err = $('#f-err');
+  if (!name || phone.replace(/\D/g,'').length < 10 || !city){
+    err.textContent = 'Заполните имя, город и телефон (не меньше 10 цифр).'; err.hidden = false; haptic('err'); return;
+  }
+  err.hidden = true;
+  const lines = state.cart.map(l => {
+    const p = PRODUCTS.find(x=>x.id===l.id), s = p.sizes[l.size];
+    return `• ${p.name}, ${s.label} × ${l.qty} — ${rub(s.price*l.qty)}`;
+  }).join('\n');
+  const total = cartTotal();
+  $('#bot-msg').textContent =
+`🍯 Новый заказ №${Math.floor(1000+Math.random()*9000)}
+
+${lines}
+
+Итого: ${rub(total)}${total>=GIFT_FROM ? '\nПодарок: забрус или мумие' : ''}
+Имя: ${name}
+Телефон: ${phone}
+Город: ${city}
+Доставка: ${$('#f-ship').value}${$('#f-note').value.trim() ? '\nКомментарий: '+$('#f-note').value.trim() : ''}
+
+[Подтвердить]  [Написать покупателю]`;
+  state.cart = []; state.sent = true; updateCount();
+  $('#order').reset(); haptic('ok'); renderCart(); updateBars(); window.scrollTo(0,0);
+}
+$('#order').addEventListener('submit', e => { e.preventDefault(); submitOrder(); });
+if (inTg){
+  try {
+    tg.MainButton.onClick(submitOrder);
+    tg.BackButton.onClick(() => { if (!$('#sheet').hidden) closeSheet(); else go('home'); });
+  } catch(e){}
+}
+
+function toast(t){
+  const el = $('#toast'); el.textContent = t; el.hidden = false;
+  clearTimeout(toast.t); toast.t = setTimeout(()=> el.hidden = true, 1500);
+}
+
+/* Старт */
+renderChips(); renderGrid(); updateCount(); updateBars();
+</script>
+</body>
+</html>
